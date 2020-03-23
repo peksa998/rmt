@@ -7,12 +7,17 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
 import java.awt.Toolkit;
 import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class LudoStart extends JFrame {
 
@@ -32,18 +37,18 @@ public class LudoStart extends JFrame {
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					LudoStart frame = new LudoStart();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	// public static void main(String[] args) {
+	// EventQueue.invokeLater(new Runnable() {
+	// public void run() {
+	// try {
+	// LudoStart frame = new LudoStart();
+	// frame.setVisible(true);
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// }
+	// });
+	// }
 
 	/**
 	 * Create the frame.
@@ -69,6 +74,7 @@ public class LudoStart extends JFrame {
 		contentPane.add(getLblWelcome());
 		contentPane.add(getLblStartBackground());
 	}
+
 	private JLabel getLblStartBackground() {
 		if (lblStartBackground == null) {
 			lblStartBackground = new JLabel("");
@@ -77,6 +83,7 @@ public class LudoStart extends JFrame {
 		}
 		return lblStartBackground;
 	}
+
 	private JLabel getLblServerName() {
 		if (lblServerName == null) {
 			lblServerName = new JLabel("");
@@ -85,6 +92,7 @@ public class LudoStart extends JFrame {
 		}
 		return lblServerName;
 	}
+
 	private JLabel getLblRoomName() {
 		if (lblRoomName == null) {
 			lblRoomName = new JLabel("");
@@ -93,6 +101,7 @@ public class LudoStart extends JFrame {
 		}
 		return lblRoomName;
 	}
+
 	private JLabel getLblChangeSBack() {
 		if (lblChangeSBack == null) {
 			lblChangeSBack = new JLabel("");
@@ -101,6 +110,7 @@ public class LudoStart extends JFrame {
 		}
 		return lblChangeSBack;
 	}
+
 	private JLabel getLblChangeS() {
 		if (lblChangeS == null) {
 			lblChangeS = new JLabel("");
@@ -109,6 +119,7 @@ public class LudoStart extends JFrame {
 		}
 		return lblChangeS;
 	}
+
 	private JLabel getLblMakeRoomBack() {
 		if (lblMakeRoomBack == null) {
 			lblMakeRoomBack = new JLabel("");
@@ -117,6 +128,7 @@ public class LudoStart extends JFrame {
 		}
 		return lblMakeRoomBack;
 	}
+
 	private JLabel getLblMakeRoom() {
 		if (lblMakeRoom == null) {
 			lblMakeRoom = new JLabel("");
@@ -125,14 +137,48 @@ public class LudoStart extends JFrame {
 		}
 		return lblMakeRoom;
 	}
+
 	private JLabel getLblGO() {
 		if (lblGO == null) {
 			lblGO = new JLabel("");
+			lblGO.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+
+					String text = textRoom.getText();
+					if (text != null && !text.equals("")) {
+						Client.setRoom(Integer.parseInt(text));
+						ClientThreadImpl.setAddress("localhost");
+						ClientThreadImpl.setSendingCode(ClientThread.GO_START);
+						Client.setStartClientThread(true);
+					} else {
+						int value = JOptionPane.showConfirmDialog(LudoStart.this,
+								"You didn't enter room name. \nDo you want to create new one?", "Warning",
+								JOptionPane.YES_NO_OPTION);
+						if (value == 0) {
+							ClientThreadImpl.setSendingCode(ClientThread.CREATE_ROOM);
+							Client.setStartClientThread(true);
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							JOptionPane.showMessageDialog(LudoStart.this,
+									"You have successfully created room number: " + Client.getRoom(), "Room created",
+									JOptionPane.INFORMATION_MESSAGE);
+						}
+
+					}
+
+				}
+			});
 			lblGO.setIcon(new ImageIcon(LudoStart.class.getResource("/Resource/FirstPage/GOButtonF (2).png")));
 			lblGO.setBounds(198, 381, 110, 115);
 		}
 		return lblGO;
 	}
+
 	private JLabel getLblWelcome() {
 		if (lblWelcome == null) {
 			lblWelcome = new JLabel("");
@@ -141,6 +187,7 @@ public class LudoStart extends JFrame {
 		}
 		return lblWelcome;
 	}
+
 	private JLabel getLblServerNameFild() {
 		if (lblServerNameFild == null) {
 			lblServerNameFild = new JLabel("New label");
@@ -150,6 +197,7 @@ public class LudoStart extends JFrame {
 		}
 		return lblServerNameFild;
 	}
+
 	private JTextField getTextRoom() {
 		if (textRoom == null) {
 			textRoom = new JTextField();

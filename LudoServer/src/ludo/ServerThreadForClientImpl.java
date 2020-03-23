@@ -20,6 +20,7 @@ public class ServerThreadForClientImpl extends Thread implements ServerThreadFor
 	private int round = 1;
 	private Player player;
 	
+	
 	public Player getPlayer() {
 		return player;
 	}
@@ -60,17 +61,23 @@ public class ServerThreadForClientImpl extends Thread implements ServerThreadFor
 	}
 	
 	public void serverExecutes() throws IOException {
-		while(dataIn.available() == 0) {
-			
-		}
+		while (dataIn.available() == 0);
+
 		receivedCode = dataIn.readInt();
 		switch(receivedCode) {
-		case 10:
+		case THROW_DICE:
 			throwDice();
 			receivedCode = 0;
 			break;
-		case 11:
+		case PLAYER_IS_READY:
 			playerIsReady();
+			receivedCode = 0;
+			break;
+		case GO_START:
+			////////////////
+			break;
+		case CREATE_ROOM:
+			createRoom();
 			receivedCode = 0;
 			break;
 		default:
@@ -79,6 +86,25 @@ public class ServerThreadForClientImpl extends Thread implements ServerThreadFor
 		}
 	}
 
+
+	@Override
+	public void goStart() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void createRoom() throws IOException {
+		int numberOfRoom;
+		do {
+			 numberOfRoom =	(int)(Math.random() * ((999 - 100) + 1)) + 100;
+		}
+		while(Server.getListOfRooms().contains(numberOfRoom));
+		Server.getListOfRooms().add(new Room(numberOfRoom));
+		dataOut.writeInt(numberOfRoom);
+		
+		
+	}
 
 	private void playerIsReady() throws IOException {
 		String name = textIn.readLine();

@@ -201,8 +201,8 @@ public class LudoMain extends JFrame {
 						JOptionPane.showMessageDialog(LudoMain.this, "Please select color", "error", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-					ClientThread.setNameOfPlayer(textName.getText());
-					ClientThread.setColorOfPlayer(selectedColor);
+					ClientThreadImpl.setNameOfPlayer(textName.getText());
+					ClientThreadImpl.setColorOfPlayer(selectedColor);
 				}
 			});
 			lblPlay.setIcon(new ImageIcon(LudoMain.class.getResource("/Resource/play1.png")));

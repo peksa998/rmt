@@ -8,9 +8,7 @@ import java.util.List;
 public class Server {
 
 	private static List<Room> listOfRooms = new LinkedList<>();
-	
-	private static Game game;
-	
+	private static List<Game> Games = new LinkedList<>();
 	
 	public static List<Room> getListOfRooms() {
 		return listOfRooms;
@@ -20,15 +18,14 @@ public class Server {
 		Server.listOfRooms = listOfRooms;
 	}
 
-	public static Game getGame() {
-		return game;
+	public static List<Game> getGames() {
+		return Games;
 	}
 
-	public static void setGame(Game game) {
-		Server.game = game;
+	public static void setGames(List<Game> games) {
+		Games = games;
 	}
-
-
+	
 
 	public static void main(String[] args) {
 		int port = 9000;
@@ -37,9 +34,6 @@ public class Server {
 				Socket socket = serverSocket.accept();
 				ServerThreadForClientImpl thread = new ServerThreadForClientImpl(socket);
 				thread.start();
-				if(game == null)
-					game = new Game(1, 1, 1, false);
-				else game.setNumberOfPlayers(game.getNumberOfPlayers() + 1);
 			}
 		}catch(Exception e){
 			

@@ -1,6 +1,7 @@
 package ludoClient;
 
 import java.awt.Color;
+import java.awt.Frame;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,11 +11,14 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import ludo.Pawn;
 
 public class ClientThreadImpl extends Thread implements ClientThread {
 
-	private static String address = "localhost";
 	private int port = 9000;
 	private Socket socket;
 	private static DataOutputStream dataOut;
@@ -23,6 +27,7 @@ public class ClientThreadImpl extends Thread implements ClientThread {
 	private static BufferedReader textIn;
 	private static String nameOfPlayer;
 	private static String colorOfPlayer;
+	
 	private static int sendingCode = 0; // everything OK
 	private static int numberOnDice;
 
@@ -32,14 +37,6 @@ public class ClientThreadImpl extends Thread implements ClientThread {
 
 	public static void setSendingCode(int sendingCode) {
 		ClientThreadImpl.sendingCode = sendingCode;
-	}
-
-	public static String getAddress() {
-		return address;
-	}
-
-	public static void setAddress(String address) {
-		ClientThreadImpl.address = address;
 	}
 
 	public static String getNameOfPlayer() {
@@ -59,24 +56,25 @@ public class ClientThreadImpl extends Thread implements ClientThread {
 	}
 
 	public ClientThreadImpl() throws UnknownHostException, IOException {
-		socket = new Socket(address, port);
+		socket = new Socket(Client.address, port);
 	}
 
 	public void clientExecutes() throws IOException {
 		switch (sendingCode) {
 
 		case REFRESH:
-			dataOut.writeInt(sendingCode);
+			
+			
 			break;
 
 		case CREATE_ROOM:
 			createRoom();
 			sendingCode = REFRESH;
-
 			break;
 
 		case GO_START:
-			////////////////
+			go_start();
+			sendingCode = REFRESH;
 			break;
 
 		case PLAYER_IS_READY:
@@ -88,10 +86,39 @@ public class ClientThreadImpl extends Thread implements ClientThread {
 			throwDice();
 			sendingCode = REFRESH;
 			break;
+		
+		case SEND_COLOR:
+			send_colour();
+			sendingCode = REFRESH;
+			break;
 
 		default:
 			dataOut.writeInt(REFRESH);
 			break;
+		}
+	}
+	
+	public void go_start() throws IOException {
+		
+		dataOut.writeInt(GO_START);
+		dataOut.writeInt(Client.getRoom());
+		
+		while (dataIn.available() == 0);
+		int rc1 = dataIn.readInt(); // ovo je potencijalni playerID
+		
+		while (dataIn.available() == 0);
+		int rc2 = dataIn.readInt();
+		
+		if(rc2 == YES_GOOD) {
+			Client.firstPage.setVisible(false);
+			Client.ludoMain.setVisible(true);
+			// rc1 je player id upisi ga negde
+			Game.PlayerYou.setPlayerId(rc1);
+			return;
+		} else {
+			
+			JOptionPane.showMessageDialog(new JFrame(), "The entered room does not exist or room is full!", "Error",
+					JOptionPane.WARNING_MESSAGE);
 		}
 	}
 
@@ -141,12 +168,65 @@ public class ClientThreadImpl extends Thread implements ClientThread {
 			dataOut = new DataOutputStream(socket.getOutputStream());
 			textIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			textOut = new PrintStream(socket.getOutputStream());
-			System.out.println("proba");
+			
 			clientExecutes();
-			System.out.println(numberOnDice);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void send_colour() throws IOException {
+
+		dataOut.writeInt(SEND_COLOR);
+		dataOut.writeInt(Client.getRoom());
+		dataOut.writeInt(Game.PlayerYou.getPlayerId());
+		dataOut.writeInt(Game.PlayerYou.getColor());
+		
+	}
+
+	@Override
+	public void refresh() throws IOException {
+		
+		dataOut.writeInt(sendingCode);
+		dataOut.writeInt(Client.getRoom());
+		refresh_mainManu();
+		
+	}
+	
+	public void refresh_mainManu() throws IOException {
+		
+		while (dataIn.available() == 0);
+		int b1 = dataIn.readInt();
+		
+		while (dataIn.available() == 0);
+		int b2 = dataIn.readInt();
+		
+		while (dataIn.available() == 0);
+		int b3 = dataIn.readInt();
+		
+		while (dataIn.available() == 0);
+		int b4 = dataIn.readInt();
+		
+		
+		if(b1 == BLUE || b2 == BLUE || b3 == BLUE || b4 == BLUE) {
+			Client.ludoMain.getLblPawnBlue().setIcon(new ImageIcon(LudoMain.class.getResource("/Resource/PawnEdge/pawnBlueEdge.png")));
+		}
+		System.out.println("plava");
+		System.out.println(b1);
+		
+		if(b1 == RED || b2 == RED || b3 == RED || b4 == RED) {
+			Client.ludoMain.getLblPawnRed().setIcon(new ImageIcon(LudoMain.class.getResource("/Resource/PawnEdge/pawnRedEdge.png")));
+		}
+		
+		if(b1 == GREEN || b2 == GREEN || b3 == GREEN || b4 == GREEN) {
+			Client.ludoMain.getLblPawnGreen().setIcon(new ImageIcon(LudoMain.class.getResource("/Resource/PawnEdge/pawnGreenEdge.png")));
+		}
+
+		if(b1 == YELLOW || b2 == YELLOW || b3 == YELLOW || b4 == YELLOW) {
+			Client.ludoMain.getLblPawnYellow().setIcon(new ImageIcon(LudoMain.class.getResource("/Resource/PawnEdge/pawnYellowEdge.png")));
+		}
+			
 	}
 }

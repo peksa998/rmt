@@ -114,6 +114,28 @@ public class LudoStart extends JFrame {
 	private JLabel getLblChangeS() {
 		if (lblChangeS == null) {
 			lblChangeS = new JLabel("");
+			lblChangeS.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					
+					int value = JOptionPane.showConfirmDialog(LudoStart.this,
+							"Do you want to change server?", "Change server",
+							JOptionPane.YES_NO_OPTION);
+					if (value == 0) {
+						
+						String s = JOptionPane.showInputDialog(LudoStart.this,
+						        "Enter the server address:");
+						
+						Client.setAddress(s); // proveri nepozeljne slucajeve
+						
+						JOptionPane.showMessageDialog(LudoStart.this,
+								"You have successfully change server to: " + Client.getAddress(), "Server changed",
+								JOptionPane.INFORMATION_MESSAGE);
+						lblServerNameFild.setText(Client.getAddress());
+					}
+					
+				}
+			});
 			lblChangeS.setIcon(new ImageIcon(LudoStart.class.getResource("/Resource/FirstPage/changeServer.png")));
 			lblChangeS.setBounds(124, 235, 250, 55);
 		}
@@ -132,6 +154,36 @@ public class LudoStart extends JFrame {
 	private JLabel getLblMakeRoom() {
 		if (lblMakeRoom == null) {
 			lblMakeRoom = new JLabel("");
+			lblMakeRoom.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent arg0) {
+					
+					int value = JOptionPane.showConfirmDialog(LudoStart.this,
+							"Do you want to create new room?", "Create room",
+							JOptionPane.YES_NO_OPTION);
+					if (value == 0) {
+						ClientThreadImpl.setSendingCode(ClientThread.CREATE_ROOM);
+						Client.setStartClientThread(true);
+						
+						while(Client.getRoom() == -1) {
+							// uspavljuje GUI
+							try {
+								Thread.sleep(40);
+							} catch (InterruptedException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
+						
+						JOptionPane.showMessageDialog(LudoStart.this,
+								"You have successfully created room number: " + Client.getRoom(), "Room created",
+								JOptionPane.INFORMATION_MESSAGE);
+						
+						textRoom.setText(String.valueOf(Client.getRoom()));
+					
+					}
+				}
+			});
 			lblMakeRoom.setIcon(new ImageIcon(LudoStart.class.getResource("/Resource/FirstPage/createRoom.png")));
 			lblMakeRoom.setBounds(136, 314, 221, 54);
 		}
@@ -148,7 +200,6 @@ public class LudoStart extends JFrame {
 					String text = textRoom.getText();
 					if (text != null && !text.equals("")) {
 						Client.setRoom(Integer.parseInt(text));
-						ClientThreadImpl.setAddress("localhost");
 						ClientThreadImpl.setSendingCode(ClientThread.GO_START);
 						Client.setStartClientThread(true);
 					} else {
@@ -158,15 +209,22 @@ public class LudoStart extends JFrame {
 						if (value == 0) {
 							ClientThreadImpl.setSendingCode(ClientThread.CREATE_ROOM);
 							Client.setStartClientThread(true);
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
+							
+							while(Client.getRoom() == -1) {
+								// uspavljuje GUI
+								try {
+									Thread.sleep(40);
+								} catch (InterruptedException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
 							}
+							
 							JOptionPane.showMessageDialog(LudoStart.this,
 									"You have successfully created room number: " + Client.getRoom(), "Room created",
 									JOptionPane.INFORMATION_MESSAGE);
+							
+							textRoom.setText(String.valueOf(Client.getRoom()));
 						}
 
 					}
@@ -190,10 +248,10 @@ public class LudoStart extends JFrame {
 
 	private JLabel getLblServerNameFild() {
 		if (lblServerNameFild == null) {
-			lblServerNameFild = new JLabel("New label");
+			lblServerNameFild = new JLabel(Client.getAddress());
 			lblServerNameFild.setFont(new Font("Showcard Gothic", Font.PLAIN, 24));
 			lblServerNameFild.setForeground(new Color(255, 153, 51));
-			lblServerNameFild.setBounds(185, 101, 128, 30);
+			lblServerNameFild.setBounds(185, 101, 221, 30);
 		}
 		return lblServerNameFild;
 	}

@@ -3,13 +3,13 @@ package ludo;
 public class Pawn {
 
 	private String naziv;
-	private Color color;
+	private int color;
 	private int index;
 	private int coordinatePawn_x;
 	private int coordinatePawn_y;	
 	
 
-	public Pawn(String naziv, Color color, int index, int coordinatePawn_x, int coordinatePawn_y) {
+	public Pawn(String naziv, int color, int index, int coordinatePawn_x, int coordinatePawn_y) {
 		super();
 		this.naziv = naziv;
 		this.color = color;
@@ -48,11 +48,11 @@ public class Pawn {
 		this.naziv = naziv;
 	}
 
-	public Color getColor() {
+	public int getColor() {
 		return color;
 	}
 
-	public void setColor(Color color) {
+	public void setColor(int color) {
 		this.color = color;
 	}
 

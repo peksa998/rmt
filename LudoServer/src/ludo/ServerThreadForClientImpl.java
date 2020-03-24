@@ -61,25 +61,36 @@ public class ServerThreadForClientImpl extends Thread implements ServerThreadFor
 	}
 	
 	public void serverExecutes() throws IOException {
+		
 		while (dataIn.available() == 0);
-
 		receivedCode = dataIn.readInt();
+		
 		switch(receivedCode) {
+		case REFRESH:
+			refresh();
+			break;
+			
 		case THROW_DICE:
 			throwDice();
 			receivedCode = 0;
 			break;
-		case PLAYER_IS_READY:
-			playerIsReady();
-			receivedCode = 0;
-			break;
+			
 		case GO_START:
 			////////////////
+			go_Start();
+			receivedCode = 0;
 			break;
+			
 		case CREATE_ROOM:
 			createRoom();
 			receivedCode = 0;
 			break;
+			
+		case SEND_COLOR:
+			send_colour();
+			receivedCode = 0;
+			break;
+			
 		default:
 			receivedCode = 0;
 			break;
@@ -87,10 +98,71 @@ public class ServerThreadForClientImpl extends Thread implements ServerThreadFor
 	}
 
 
-	@Override
-	public void goStart() {
-		// TODO Auto-generated method stub
+	private void refresh() throws IOException {
 		
+		while (dataIn.available() == 0);
+		int room = dataIn.readInt();
+		
+		refresh_mainManu(room);
+		
+	}
+
+	private void refresh_mainManu(int room) throws IOException {
+		
+		Player p1 = findPlayer(room, 1);
+		Player p2 = findPlayer(room, 2);
+		Player p3 = findPlayer(room, 2);
+		Player p4 = findPlayer(room, 4);
+		
+		int b1 = p1.getColor();
+		int b2 = p2.getColor();
+		int b3 = p3.getColor();
+		int b4 = p4.getColor();
+		
+		dataOut.writeInt(b1);
+		dataOut.writeInt(b2);
+		dataOut.writeInt(b3);
+		dataOut.writeInt(b4);
+	}
+
+	@Override
+	public void go_Start() throws IOException {
+		
+		while (dataIn.available() == 0);
+		int room = dataIn.readInt();
+
+		
+			
+		for(int i=0; i<Server.getListOfRooms().size(); i++){ 		// prolaz kroz listu
+			if(Server.getListOfRooms().get(i).getRoomId() == room) {
+				
+				if(Server.getListOfRooms().get(i).getNumberOfPlayers() < 4) {
+					if(Server.getListOfRooms().get(i).getNumberOfPlayers() == 0) {
+						Server.getGames().add(new Game(Server.getListOfRooms().get(i), new Player(Server.getListOfRooms().get(i).getNumberOfPlayers() + 1)));
+						
+						dataOut.writeInt(Server.getListOfRooms().get(i).getNumberOfPlayers() + 1);
+					}
+					
+					for(int j=0; j < Server.getGames().size(); j++){
+						
+						if(Server.getGames().get(j).getRoom().getRoomId() == room) {
+							Server.getGames().get(j).getPlayers().add(new Player(Server.getListOfRooms().get(i).getNumberOfPlayers() + 1));
+							
+							dataOut.writeInt(Server.getListOfRooms().get(i).getNumberOfPlayers() + 1);
+							break;
+						}
+					}
+					
+					Server.getListOfRooms().get(i).setNumberOfPlayers(Server.getListOfRooms().get(i).getNumberOfPlayers() + 1);
+					dataOut.writeInt(YES_GOOD);
+				} else {
+					dataOut.writeInt(NO_ERROR);
+				}
+				
+			} else {
+				dataOut.writeInt(NO_ERROR);		
+			}
+		}	
 	}
 
 	@Override
@@ -98,32 +170,12 @@ public class ServerThreadForClientImpl extends Thread implements ServerThreadFor
 		int numberOfRoom;
 		do {
 			 numberOfRoom =	(int)(Math.random() * ((999 - 100) + 1)) + 100;
+			 
 		}
-		while(Server.getListOfRooms().contains(numberOfRoom));
+		while(Server.getListOfRooms().contains(new Room(numberOfRoom)));
 		Server.getListOfRooms().add(new Room(numberOfRoom));
-		dataOut.writeInt(numberOfRoom);
-		
-		
-	}
 
-	private void playerIsReady() throws IOException {
-		String name = textIn.readLine();
-		String stringColor = textIn.readLine();
-		Color color;
-		
-		if(stringColor.equalsIgnoreCase("red"))
-			color = Color.RED;
-		else if(stringColor.equalsIgnoreCase("blue"))
-			color = Color.BLUE;
-		else if(stringColor.equalsIgnoreCase("green"))
-			color = Color.GREEN;
-		else color = Color.YELLOW;
-		
-		player = new Player(name, color, false, Server.getGame().getNumberOfPlayers());
-		
-		if(player.getPlayerId() == 1) {
-			player.setOnTurn(true);
-		}
+		dataOut.writeInt(numberOfRoom);
 	}
 
 	@Override
@@ -139,6 +191,43 @@ public class ServerThreadForClientImpl extends Thread implements ServerThreadFor
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void send_colour() throws IOException {
+		
+		while (dataIn.available() == 0);
+		int room = dataIn.readInt();
+		
+		while (dataIn.available() == 0);
+		int playerID = dataIn.readInt();
+
+		while (dataIn.available() == 0);
+		int colorOfPlayer = dataIn.readInt();
+
+		Player p = findPlayer(room, playerID);
+		p.setColor(colorOfPlayer);
+		System.out.println(colorOfPlayer); ////// obrisi
+
+		
+		
+	}
+	
+	public Player findPlayer(int room, int id) {
+		
+		for(int j=0; j < Server.getGames().size(); j++){
+			if(Server.getGames().get(j).getRoom().getRoomId() == room) {
+				
+				for(int i=0; i< Server.getGames().get(j).getPlayers().size(); i++){
+					if(Server.getGames().get(j).getPlayers().get(i).getPlayerId() == id) {
+						
+						return Game.getPlayers().get(i);
+					}
+				}
+					
+			}
+		}
+		return player;
 	}
 	
 }

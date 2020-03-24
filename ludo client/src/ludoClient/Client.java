@@ -3,9 +3,22 @@ package ludoClient;
 import java.io.IOException;
 
 public class Client {
+	
+	static String address = "localhost";
+
+
 	private static boolean startClientThread = false;
 	public static LudoStart firstPage = new LudoStart();
-	private static int room;
+	public static LudoMain ludoMain = new LudoMain();
+	private static int room = -1;
+	
+	public static String getAddress() {
+		return address;
+	}
+
+	public static void setAddress(String address) {
+		Client.address = address;
+	}
 	
 	
 	public static int getRoom() {
@@ -32,7 +45,7 @@ public class Client {
 				Thread.sleep(500);
 				if(startClientThread == true) {
 					while(true){
-						Thread.sleep(350);
+						Thread.sleep(500);
 						ClientThreadImpl clientThread = new ClientThreadImpl();
 						clientThread.start();
 					}

@@ -3,7 +3,7 @@ package ludo;
 import java.util.Timer;
 
 public class Room {
-	private int numberOfPlayers;
+	private int numberOfPlayers = 0;
 	private int roomId;
 	private Timer timeInRoom;
 	
